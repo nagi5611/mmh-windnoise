@@ -129,24 +129,34 @@ sudo add-apt-repository "http://dl.openfoam.org/ubuntu main dev"
 sudo apt update
 ```
 
+### `git pull` で divergent branches
+
+ローカル変更とリモートが食い違っています。修復ブランチをそのまま使う場合:
+
+```bash
+git fetch origin
+git checkout cursor/openfoam-apt-reset-c2c2
+git reset --hard origin/cursor/openfoam-apt-reset-c2c2
+```
+
 ### `/opt/openfoam13/etc/bashrc: ZSH_NAME: unbound variable`
 
-`setup-native.sh` が `set -u` で動作中に OpenFOAM の bashrc を読み込むと発生します。最新版で修正済みです。
+OpenFOAM は入っているが setup が途中で止まった状態です。
 
-手元ですぐ直す場合:
+```bash
+git fetch origin
+git reset --hard origin/cursor/openfoam-apt-reset-c2c2
+chmod +x scripts/fix-openfoam-shell.sh
+./scripts/fix-openfoam-shell.sh
+python3 scripts/generate_cases.py
+```
+
+手動で直すだけなら:
 
 ```bash
 set +u
 . /opt/openfoam13/etc/bashrc
-set -u
 simpleFoam -help
-```
-
-または setup を再実行:
-
-```bash
-git pull
-./scripts/setup-native.sh --skip-cases
 ```
 
 ### snappyHexMesh が失敗

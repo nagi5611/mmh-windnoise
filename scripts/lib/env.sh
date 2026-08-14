@@ -7,16 +7,51 @@ MMH_REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 # set -u 有効時は一時的に無効化してから source する
 mmh_source_openfoam_file() {
   local rc="$1"
-  local nounset=0
-  case "$-" in
-    *u*) nounset=1 ;;
-  esac
-
   set +u
   # shellcheck disable=SC1090
   source "${rc}"
-  if [[ "${nounset}" -eq 1 ]]; then
-    set -u
+}
+
+mmh_remove_openfoam_profile_block() {
+  local profile_file="$1"
+  local marker="# mmh-windnoise OpenFOAM"
+  [[ -f "${profile_file}" ]] || return 0
+  if grep -qF "${marker}" "${profile_file}"; then
+    sed -i "/${marker}/,\$d" "${profile_file}"
+  fi
+  # 以前の壊れた1行 source だけが残っている場合
+  if grep -qF 'OPENFOAM_BASHRC' "${profile_file}" && grep -qF '/opt/openfoam13/etc/bashrc' "${profile_file}"; then
+    sed -i '\|/opt/openfoam13/etc/bashrc|d' "${profile_file}"
+    sed -i '\|OPENFOAM_BASHRC|d' "${profile_file}"
+  fi
+}
+
+mmh_append_openfoam_profile() {
+  local profile_file="$1"
+  local openfoam_bashrc="$2"
+  local repo_root="$3"
+  local marker="# mmh-windnoise OpenFOAM"
+
+  mmh_remove_openfoam_profile_block "${profile_file}"
+  touch "${profile_file}"
+
+  if [[ "${profile_file}" == *zshrc ]]; then
+    cat >>"${profile_file}" <<EOF
+
+${marker}
+export OPENFOAM_BASHRC="${openfoam_bashrc}"
+. "\${OPENFOAM_BASHRC}"
+export MMH_REPO_ROOT="${repo_root}"
+EOF
+  else
+    cat >>"${profile_file}" <<EOF
+
+${marker}
+export OPENFOAM_BASHRC="${openfoam_bashrc}"
+set +u
+. "\${OPENFOAM_BASHRC}"
+export MMH_REPO_ROOT="${repo_root}"
+EOF
   fi
 }
 
