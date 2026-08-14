@@ -82,7 +82,7 @@
 | 出口 | x = +0.5 m |
 | 背景セル | 20 mm（1 m ÷ 50 分割）— 遠方場は粗いまま |
 | 頭表面近傍 | **約 1.25〜2.5 mm**（snappyHexMesh level 3〜4、凹凸部は level 4 ≈ 1.25 mm） |
-| 稜線（鼻・耳など） | `surfaceFeatureExtract` + feature level 4 |
+| 稜線（鼻・耳など） | `resolveFeatureAngle 30` + 曲面 level 4（**eMesh 不要**） |
 | 目標セル数 | **80万〜250万**（32 GB RAM、表面 ~2 mm 近似） |
 | y+（壁関数） | 30〜100 |
 

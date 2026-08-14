@@ -27,14 +27,6 @@ castellatedMeshControls
     maxLoadUnbalance 0.10;
     nCellsBetweenLevels 2;
 
-    features
-    (
-        {
-            file    "head.eMesh";
-            level   4;
-        }
-    );
-
     refinementSurfaces
     {
         head
@@ -44,7 +36,7 @@ castellatedMeshControls
         }
     }
 
-    resolveFeatureAngle 30;
+    resolveFeatureAngle 30;  // 鼻・耳などの稜線を曲面細分化で拾う（eMesh 不要）
 
     refinementRegions
     {
