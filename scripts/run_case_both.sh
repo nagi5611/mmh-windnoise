@@ -35,7 +35,7 @@ run_parallel() {
 
   (
     cd "${CASE_DIR}"
-    mpirun -np "${NP}" "${solver}" -parallel | tee "log.${solver}.parallel"
+    mmh_mpi_run "${NP}" "${solver}" -parallel | tee "log.${solver}.parallel"
     reconstructPar | tee "log.reconstructPar.${solver}"
   )
 }
