@@ -21,7 +21,10 @@
 ```bash
 git clone https://github.com/nagi5611/mmh-windnoise.git
 cd mmh-windnoise
-./scripts/setup-native.sh    # これでセットアップ完了
+  ./scripts/setup-native.sh    # これでセットアップ完了
+
+# GPG / apt エラー時
+./scripts/reset-openfoam-apt.sh
 ```
 
 詳細: [docs/setup-ubuntu-native.md](docs/setup-ubuntu-native.md)

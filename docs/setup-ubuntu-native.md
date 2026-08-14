@@ -9,7 +9,7 @@ git clone https://github.com/nagi5611/mmh-windnoise.git
 cd mmh-windnoise
 git checkout cursor/head-wind-pressure-c2c2   # PR 未マージ時のみ
 
-chmod +x scripts/setup-native.sh
+chmod +x scripts/setup-native.sh scripts/reset-openfoam-apt.sh
 ./scripts/setup-native.sh
 ```
 
@@ -113,7 +113,14 @@ sudo sh scripts/setup-native.sh
 
 ### `NO_PUBKEY 6C0DAC728B29D817` / repository is not signed
 
-OpenFOAM の GPG 鍵が未登録です。スクリプト最新版で自動修正されます。手動なら:
+OpenFOAM の GPG 鍵が未登録、または壊れた設定が残っています。
+
+```bash
+./scripts/reset-openfoam-apt.sh
+./scripts/setup-native.sh
+```
+
+手動で直す場合:
 
 ```bash
 wget -qO- https://dl.openfoam.org/gpg.key | sudo tee /etc/apt/trusted.gpg.d/openfoam.asc >/dev/null
