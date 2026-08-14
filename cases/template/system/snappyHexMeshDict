@@ -45,18 +45,18 @@ castellatedMeshControls
     {
     }
 
-    locationInMesh (0.5 0 0.5);
+    locationInMesh (0.35 0.35 0.0);
 
     allowFreeStandingZoneFaces true;
 }
 
 snapControls
 {
-    nSmoothPatch    3;
-    tolerance       2.0;
-    nSolveIter      100;
-    nRelaxIter      5;
-    nFeatureSnapIter 10;
+    nSmoothPatch    5;
+    tolerance       1.5;
+    nSolveIter      200;
+    nRelaxIter      8;
+    nFeatureSnapIter 15;
     implicitFeatureSnap false;
     explicitFeatureSnap true;
     multiRegionFeatureSnap false;
