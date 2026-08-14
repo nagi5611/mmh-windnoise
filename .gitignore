@@ -1,0 +1,26 @@
+# Generated cases (run: python3 scripts/generate_cases.py)
+cases/run/
+
+# OpenFOAM case outputs
+cases/run/**/processor*
+cases/run/**/[0-9]*
+cases/run/**/[0-9][0-9]*
+cases/run/**/postProcessing/
+cases/run/**/constant/polyMesh/
+cases/run/**/log.*
+cases/run/**/dynamicCode/
+cases/run/**/VTK/
+cases/run/**/*.foam
+cases/run/**/mesh.msh
+
+# Rotated STL cache
+cases/run/**/constant/triSurface/head_*.stl
+
+# ParaView
+*.pvsm.bak
+postprocess/output/
+
+# OS / editor
+.DS_Store
+*.swp
+.vscode/

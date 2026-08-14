@@ -1,0 +1,16 @@
+services:
+  openfoam:
+    image: opencfd/openfoam-default:2312
+    volumes:
+      - .:/workspace
+    working_dir: /workspace
+    environment:
+      - FOAM_RUN=/workspace/cases/run
+    # Ryzen 8940HX: 物理コア数に合わせて調整
+    deploy:
+      resources:
+        limits:
+          cpus: "14"
+          memory: 28G
+    stdin_open: true
+    tty: true
