@@ -7,7 +7,8 @@ help:
 	@echo "  ./scripts/setup-native.sh"
 	@echo ""
 	@echo "計算:"
-	@echo "  make generate       44 ケースディレクトリを生成"
+	@echo "  make generate       44 ケースディレクトリを生成
+  make sync-templates 既存ケースにテンプレート更新を反映"
 	@echo "  make mesh CASE=...  1 ケースをメッシュ生成"
 	@echo "  make run-steady     全ケース simpleFoam（定常・高速）"
 	@echo "  make run-transient  全ケース pimpleFoam（10s 非定常）"
@@ -22,6 +23,9 @@ setup:
 
 generate:
 	python3 scripts/generate_cases.py
+
+sync-templates:
+	bash scripts/sync_case_templates.sh
 
 mesh:
 	@test -n "$(CASE)" || (echo "Usage: make mesh CASE=psi000_U010" && exit 1)

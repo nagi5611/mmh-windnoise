@@ -22,7 +22,7 @@ solvers
         relTol          0;
     }
 
-    "(U|k|omega)"
+    U
     {
         solver          smoothSolver;
         smoother        symGaussSeidel;
@@ -30,9 +30,37 @@ solvers
         relTol          0.01;
     }
 
-    "(U|k|omega)Final"
+    UFinal
     {
         $U;
+        relTol          0;
+    }
+
+    k
+    {
+        solver          smoothSolver;
+        smoother        symGaussSeidel;
+        tolerance       1e-6;
+        relTol          0.01;
+    }
+
+    kFinal
+    {
+        $k;
+        relTol          0;
+    }
+
+    omega
+    {
+        solver          smoothSolver;
+        smoother        symGaussSeidel;
+        tolerance       1e-6;
+        relTol          0.01;
+    }
+
+    omegaFinal
+    {
+        $omega;
         relTol          0;
     }
 }
@@ -55,7 +83,8 @@ SIMPLE
     {
         p               1e-2;
         U               1e-3;
-        "(k|omega)"     1e-3;
+        k               1e-3;
+        omega           1e-3;
     }
 }
 
