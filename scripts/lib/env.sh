@@ -107,12 +107,22 @@ mmh_ensure_case_initial_fields() {
   local case_dir="${1:?case_dir required}"
   local case_name
   case_name="$(basename "${case_dir}")"
+  local f
+  local missing=0
 
-  if [[ -f "${case_dir}/0/p" ]]; then
+  for f in p U k omega nut; do
+    if [[ ! -f "${case_dir}/0/${f}" ]]; then
+      missing=1
+      break
+    fi
+  done
+
+  if [[ "${missing}" -eq 0 ]]; then
     return 0
   fi
 
-  echo "WARNING: ${case_dir}/0/ が無いためテンプレートから復元します" >&2
+  echo "WARNING: ${case_dir}/0/ が不完全なためテンプレートから復元します" >&2
+  rm -rf "${case_dir}/0"
   cp -r "${MMH_REPO_ROOT}/cases/template/0" "${case_dir}/0"
 
   if [[ "${case_name}" =~ _U([0-9]+)$ ]]; then
@@ -124,4 +134,31 @@ mmh_ensure_case_initial_fields() {
     echo "ERROR: ケース名から風速を読めません: ${case_name}" >&2
     return 1
   fi
+}
+
+# decomposePar 前後の並列ディレクトリを整える
+mmh_decompose_case() {
+  local case_dir="${1:?case_dir required}"
+  local np="${2:?np required}"
+  local log_tag="${3:-decomposePar}"
+
+  mmh_ensure_case_initial_fields "${case_dir}"
+  mmh_clean_case_solver_state "${case_dir}"
+
+  (
+    cd "${case_dir}"
+    foamDictionary system/decomposeParDict -entry numberOfSubdomains -set "${np}"
+    decomposePar -force | tee "log.${log_tag}"
+
+    local f
+    for f in p U k omega nut; do
+      if [[ ! -f "processor0/0/${f}" ]]; then
+        echo "ERROR: decomposePar 後に processor0/0/${f} がありません。" >&2
+        echo "  ルート 0/${f}: $(test -f "0/${f}" && echo OK || echo MISSING)" >&2
+        echo "  対処: bash scripts/restore_case_ic.sh $(basename "${case_dir}")" >&2
+        echo "        rm -rf processor* && make run-both CASE=$(basename "${case_dir}") NP=${np}" >&2
+        return 1
+      fi
+    done
+  )
 }

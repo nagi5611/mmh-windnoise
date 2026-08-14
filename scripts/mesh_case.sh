@@ -47,3 +47,6 @@ if [[ "${CHECK_RC}" -ne 0 ]]; then
 fi
 
 echo "Done: ${CASE}"
+
+mmh_ensure_case_initial_fields "${CASE_DIR}"
+echo "Initial fields OK: ${CASE_DIR}/0/"

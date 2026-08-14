@@ -10,6 +10,7 @@ help:
 	@echo "  make generate       44 ケースディレクトリを生成"
 	@echo "  make sync-templates 既存ケースにテンプレート更新を反映"
 	@echo "  make mesh CASE=...  1 ケースをメッシュ生成"
+	@echo "  make restore-ic CASE=...  初期条件 0/ を復元"
 	@echo "  make run-steady     全ケース simpleFoam（定常・高速）"
 	@echo "  make run-transient  全ケース pimpleFoam（10s 非定常）"
 	@echo "  make run-parallel CASE=... [NP=8]  1ケース MPI 並列"
@@ -31,6 +32,10 @@ sync-templates:
 mesh:
 	@test -n "$(CASE)" || (echo "Usage: make mesh CASE=psi000_U010" && exit 1)
 	bash scripts/mesh_case.sh $(CASE)
+
+restore-ic:
+	@test -n "$(CASE)" || (echo "Usage: make restore-ic CASE=psi000_U010" && exit 1)
+	bash scripts/restore_case_ic.sh $(CASE)
 
 run-steady:
 	bash scripts/run_matrix.sh simpleFoam

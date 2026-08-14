@@ -10,7 +10,6 @@ CASE="${1:?Usage: run_case_both.sh <case_name> [nProcs]}"
 NP="${2:-${MMH_NPROCS:-8}}"
 
 CASE_DIR="${MMH_REPO_ROOT}/cases/run/${CASE}"
-TEMPLATE_CTRL="${MMH_REPO_ROOT}/cases/template/system/controlDict"
 mmh_require_openfoam
 
 if [[ ! "${NP}" =~ ^[0-9]+$ ]] || [[ "${NP}" -lt 2 ]]; then
@@ -23,32 +22,22 @@ if [[ ! -d "${CASE_DIR}/constant/polyMesh" ]]; then
   exit 1
 fi
 
-mmh_ensure_case_initial_fields "${CASE_DIR}"
-
 run_parallel() {
   local solver="$1"
   local label="$2"
-
-  cd "${CASE_DIR}"
 
   echo ""
   echo "========================================"
   echo " ${label} (${solver}, np=${NP})"
   echo "========================================"
 
-  mmh_clean_case_solver_state "${CASE_DIR}"
+  mmh_decompose_case "${CASE_DIR}" "${NP}" "decomposePar.${solver}"
 
-  foamDictionary system/decomposeParDict -entry numberOfSubdomains -set "${NP}"
-  decomposePar -force | tee "log.decomposePar.${solver}"
-
-  if [[ ! -f "processor0/0/p" ]]; then
-    echo "ERROR: decomposePar 後に processor0/0/p がありません。" >&2
-    echo "  0/p の有無: $(test -f 0/p && echo OK || echo MISSING)" >&2
-    exit 1
-  fi
-
-  mpirun -np "${NP}" "${solver}" -parallel | tee "log.${solver}.parallel"
-  reconstructPar | tee "log.reconstructPar.${solver}"
+  (
+    cd "${CASE_DIR}"
+    mpirun -np "${NP}" "${solver}" -parallel | tee "log.${solver}.parallel"
+    reconstructPar | tee "log.reconstructPar.${solver}"
+  )
 }
 
 # --- 定常 ---

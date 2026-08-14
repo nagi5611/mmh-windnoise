@@ -23,22 +23,12 @@ if [[ ! -d "${CASE_DIR}/constant/polyMesh" ]]; then
   exit 1
 fi
 
+mmh_decompose_case "${CASE_DIR}" "${NP}" "decomposePar"
+
 cd "${CASE_DIR}"
 
-if [[ ! -d processor0 ]]; then
-  echo "=== decomposePar (${NP} cores) ==="
-  mmh_ensure_case_initial_fields "${CASE_DIR}"
-  foamDictionary system/decomposeParDict -entry numberOfSubdomains -set "${NP}"
-  decomposePar -force | tee log.decomposePar
-fi
-
-if [[ ! -f "processor0/0/p" ]]; then
-  echo "ERROR: processor0/0/p がありません。decomposePar を再実行してください。" >&2
-  exit 1
-fi
-
 echo "=== ${SOLVER} -parallel (np=${NP}) ==="
-mpirun -np "${NP}" ${SOLVER} -parallel | tee "log.${SOLVER}.parallel"
+mpirun -np "${NP}" "${SOLVER}" -parallel | tee "log.${SOLVER}.parallel"
 
 echo "=== reconstructPar ==="
 reconstructPar | tee log.reconstructPar
