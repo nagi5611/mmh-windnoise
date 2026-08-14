@@ -33,7 +33,7 @@ functions
     fieldAverage1
     {
         type            fieldAverage;
-        libs            (fieldFunctionObjects);
+        libs            ("libfieldFunctionObjects.so");
         writeControl    writeTime;
         fields
         (
@@ -53,17 +53,20 @@ functions
     surfaces
     {
         type            surfaces;
-        libs            (sampling);
+        libs            ("libsampling.so");
         writeControl    writeTime;
         surfaceFormat   vtk;
         fields          (p U);
         interpolationScheme cellPoint;
-        surfaceFields   (p U);
 
-        headSurface
+        surfaces
         {
-            type            patch;
-            patches         (head);
+            headSurface
+            {
+                type            patch;
+                patches         (head);
+                interpolate     true;
+            }
         }
     }
 }
