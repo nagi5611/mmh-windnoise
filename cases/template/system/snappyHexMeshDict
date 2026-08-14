@@ -12,10 +12,10 @@ addLayers       false;
 
 geometry
 {
-    head.stl
+    head
     {
-        type triSurfaceMesh;
-        name head;
+        type triSurface;
+        file "head.stl";
     }
 }
 
