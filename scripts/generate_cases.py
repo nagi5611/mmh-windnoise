@@ -16,6 +16,10 @@ MODEL_SRC = ROOT / "models" / "Super_Average_Head.stl"
 YAW_ANGLES = [0, 90, 180, 270]
 WIND_SPEEDS = [i * 0.5 for i in range(11)]  # 0.0 .. 5.0
 
+# STL 素の向きは顔が +Y。正面風（顔が風の来る方向 −X を向く）にするための基準オフセット。
+# 風速は常に +X、ψ=0° で正面風になるよう Z 軸回りに 90° 加える。
+BASE_YAW_DEG = 90
+
 
 def case_name(yaw_deg: int, speed: float) -> str:
     """ケース名を生成する。"""
@@ -89,7 +93,7 @@ def generate_case(yaw_deg: int, speed: float) -> Path:
     shutil.copytree(TEMPLATE, case_dir)
 
     stl_dst = case_dir / "constant" / "triSurface" / "head.stl"
-    rotate_stl_z(MODEL_SRC, stl_dst, yaw_deg)
+    rotate_stl_z(MODEL_SRC, stl_dst, BASE_YAW_DEG + yaw_deg)
 
     replacements = {
         "__CASE_NAME__": name,
