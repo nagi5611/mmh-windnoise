@@ -98,6 +98,30 @@ source ~/.bashrc
 sudo apt-get install -y software-properties-common
 ```
 
+### `set: Illegal option -o pipefail`
+
+`sh` や `sudo sh` で実行しています。`dash` では動きません。
+
+```bash
+# 正しい
+./scripts/setup-native.sh
+
+# 間違い
+sh scripts/setup-native.sh
+sudo sh scripts/setup-native.sh
+```
+
+### `NO_PUBKEY 6C0DAC728B29D817` / repository is not signed
+
+OpenFOAM の GPG 鍵が未登録です。スクリプト最新版で自動修正されます。手動なら:
+
+```bash
+wget -qO- https://dl.openfoam.org/gpg.key | sudo tee /etc/apt/trusted.gpg.d/openfoam.asc >/dev/null
+sudo rm -f /etc/apt/sources.list.d/*dl_openfoam_org*list
+sudo add-apt-repository "http://dl.openfoam.org/ubuntu main dev"
+sudo apt update
+```
+
 ### snappyHexMesh が失敗
 
 ```bash
