@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # Ubuntu Server 24.04 (noble) 向けネイティブ OpenFOAM セットアップ
-# 使い方: ./scripts/setup-native.sh
+# 使い方: ./scripts/setup-native.sh  （sh や sudo sh ではなく bash で実行）
+if [ -z "${BASH_VERSION:-}" ]; then
+  exec /usr/bin/env bash "$0" "$@"
+fi
+
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -16,6 +20,12 @@ Usage: ./scripts/setup-native.sh [options]
   Ubuntu Server 24.04 に OpenFOAM (Foundation v13) を入れ、
   このリポジトリの計算準備まで完了します。
 
+  実行方法（重要）:
+    ./scripts/setup-native.sh
+  以下は使わないこと:
+    sh scripts/setup-native.sh
+    sudo sh scripts/setup-native.sh
+
 Options:
   --with-paraview   ParaView もインストール（GUI 環境向け）
   --skip-cases      44 ケース生成をスキップ
@@ -30,6 +40,26 @@ EOF
 
 log() { printf '\n[mmh-setup] %s\n' "$*"; }
 die() { echo "[mmh-setup] ERROR: $*" >&2; exit 1; }
+
+ensure_openfoam_gpg_key() {
+  if [[ -f /etc/apt/trusted.gpg.d/openfoam.asc ]]; then
+    return 0
+  fi
+  log "OpenFOAM GPG 鍵を登録"
+  sudo mkdir -p /etc/apt/trusted.gpg.d
+  if command -v wget >/dev/null 2>&1; then
+    wget -qO- https://dl.openfoam.org/gpg.key | sudo tee /etc/apt/trusted.gpg.d/openfoam.asc >/dev/null
+  elif command -v curl >/dev/null 2>&1; then
+    curl -fsSL https://dl.openfoam.org/gpg.key | sudo tee /etc/apt/trusted.gpg.d/openfoam.asc >/dev/null
+  else
+    die "wget または curl が必要です"
+  fi
+}
+
+# 前回の失敗でリポジトリだけ追加されている場合に備える
+if compgen -G "/etc/apt/sources.list.d/*dl_openfoam_org*list" >/dev/null; then
+  ensure_openfoam_gpg_key
+fi
 
 for arg in "$@"; do
   case "${arg}" in
@@ -69,12 +99,37 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
   make \
   python3 \
   software-properties-common \
-  wget
+  wget \
+  gnupg
 
-if ! apt-cache show openfoam13 >/dev/null 2>&1; then
+install_openfoam_repo() {
+  ensure_openfoam_gpg_key
+
+  # 壊れたリポジトリ設定があれば削除して再登録
+  sudo rm -f /etc/apt/sources.list.d/*dl_openfoam_org*list 2>/dev/null || true
+
   log "OpenFOAM リポジトリを追加"
   sudo add-apt-repository -y "http://dl.openfoam.org/ubuntu main dev"
   sudo apt-get update
+}
+
+if ! apt-cache show openfoam13 >/dev/null 2>&1; then
+  install_openfoam_repo
+else
+  log "openfoam13 を確認（apt update）"
+  set +e
+  UPDATE_LOG="$(sudo apt-get update 2>&1)"
+  UPDATE_RC=$?
+  set -e
+  if [[ "${UPDATE_RC}" -ne 0 ]]; then
+    if echo "${UPDATE_LOG}" | grep -qE "NO_PUBKEY|not signed"; then
+      log "GPG 鍵エラーを検出。リポジトリを再設定します"
+      install_openfoam_repo
+    else
+      echo "${UPDATE_LOG}" >&2
+      die "apt update に失敗しました"
+    fi
+  fi
 fi
 
 log "OpenFOAM 13 をインストール"

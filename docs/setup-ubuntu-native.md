@@ -9,7 +9,7 @@ git clone https://github.com/nagi5611/mmh-windnoise.git
 cd mmh-windnoise
 git checkout cursor/head-wind-pressure-c2c2   # PR 未マージ時のみ
 
-chmod +x scripts/setup-native.sh
+chmod +x scripts/setup-native.sh scripts/reset-openfoam-apt.sh
 ./scripts/setup-native.sh
 ```
 
@@ -96,6 +96,37 @@ source ~/.bashrc
 
 ```bash
 sudo apt-get install -y software-properties-common
+```
+
+### `set: Illegal option -o pipefail`
+
+`sh` や `sudo sh` で実行しています。`dash` では動きません。
+
+```bash
+# 正しい
+./scripts/setup-native.sh
+
+# 間違い
+sh scripts/setup-native.sh
+sudo sh scripts/setup-native.sh
+```
+
+### `NO_PUBKEY 6C0DAC728B29D817` / repository is not signed
+
+OpenFOAM の GPG 鍵が未登録、または壊れた設定が残っています。
+
+```bash
+./scripts/reset-openfoam-apt.sh
+./scripts/setup-native.sh
+```
+
+手動で直す場合:
+
+```bash
+wget -qO- https://dl.openfoam.org/gpg.key | sudo tee /etc/apt/trusted.gpg.d/openfoam.asc >/dev/null
+sudo rm -f /etc/apt/sources.list.d/*dl_openfoam_org*list
+sudo add-apt-repository "http://dl.openfoam.org/ubuntu main dev"
+sudo apt update
 ```
 
 ### snappyHexMesh が失敗
