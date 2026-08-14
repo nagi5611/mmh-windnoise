@@ -1,4 +1,4 @@
-.PHONY: help setup generate shell mesh run-steady run-transient post clean docker-shell
+.PHONY: help setup generate sync-templates shell mesh run-steady run-transient run-parallel post clean docker-shell
 
 help:
 	@echo "mmh-windnoise — 人頭 風圧場 44 ケース"
@@ -12,6 +12,7 @@ help:
 	@echo "  make mesh CASE=...  1 ケースをメッシュ生成"
 	@echo "  make run-steady     全ケース simpleFoam（定常・高速）"
 	@echo "  make run-transient  全ケース pimpleFoam（10s 非定常）"
+	@echo "  make run-parallel CASE=... [NP=8]  1ケース MPI 並列"
 	@echo "  make post           ParaView 用 VTK 出力"
 	@echo ""
 	@echo "例: make mesh CASE=psi000_U010"
@@ -36,6 +37,10 @@ run-steady:
 
 run-transient:
 	bash scripts/run_matrix.sh pimpleFoam
+
+run-parallel:
+	@test -n "$(CASE)" || (echo "Usage: make run-parallel CASE=psi000_U010 NP=8" && exit 1)
+	bash scripts/run_case_parallel.sh $(CASE) pimpleFoam $(NP)
 
 post:
 	bash scripts/export_vtk.sh
