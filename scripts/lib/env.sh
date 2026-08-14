@@ -7,9 +7,13 @@ MMH_REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 # set -u 有効時は一時的に無効化してから source する
 mmh_source_openfoam_file() {
   local rc="$1"
-  set +u
+  # OpenFOAM bashrc は ZSH_NAME 参照・ParaView の head パイプ・bash_completion で
+  # 非対話シェルが落ちるため、source 中だけ緩める
+  set +eu
+  unset BASH
   # shellcheck disable=SC1090
   source "${rc}"
+  set -e
 }
 
 mmh_remove_openfoam_profile_block() {
