@@ -21,21 +21,26 @@ geometry
 
 castellatedMeshControls
 {
-    maxLocalCells 200000;
-    maxGlobalCells 1500000;
+    maxLocalCells 500000;
+    maxGlobalCells 4000000;
     minRefinementCells 10;
     maxLoadUnbalance 0.10;
-    nCellsBetweenLevels 3;
+    nCellsBetweenLevels 2;
 
     features
     (
+        {
+            file    "head.eMesh";
+            level   5;
+        }
     );
 
     refinementSurfaces
     {
         head
         {
-            level (2 4);
+            // 背景 25 mm → level 4 ≈ 1.6 mm, level 5 ≈ 0.78 mm（顔の凹凸用）
+            level (4 5);
         }
     }
 

@@ -29,6 +29,9 @@ cd "${CASE_DIR}"
 echo "=== blockMesh ==="
 blockMesh | tee log.blockMesh
 
+echo "=== surfaceFeatureExtract ==="
+surfaceFeatureExtract | tee log.surfaceFeatureExtract
+
 echo "=== snappyHexMesh ==="
 snappyHexMesh -overwrite | tee log.snappyHexMesh
 

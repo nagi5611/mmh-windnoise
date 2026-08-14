@@ -19,6 +19,7 @@ SYNC_PATHS=(
   system/controlDict
   system/fvSchemes
   system/snappyHexMeshDict
+  system/surfaceFeatureExtractDict
   system/blockMeshDict
 )
 
