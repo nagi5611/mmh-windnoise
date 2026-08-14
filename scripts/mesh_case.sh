@@ -2,8 +2,14 @@
 # 1 ケースのメッシュ生成（blockMesh → snappyHexMesh → checkMesh）
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/lib/env.sh"
+
 CASE="${1:?Usage: mesh_case.sh <case_name>}"
-CASE_DIR="/workspace/cases/run/${CASE}"
+CASE_DIR="${MMH_REPO_ROOT}/cases/run/${CASE}"
+
+mmh_require_openfoam
 
 if [[ ! -d "${CASE_DIR}" ]]; then
   echo "Case not found: ${CASE_DIR}"

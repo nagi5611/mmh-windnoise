@@ -2,23 +2,29 @@
 # 時間平均圧力・速度を VTK にエクスポート（ParaView 用）
 set -euo pipefail
 
-MANIFEST="/workspace/cases/run/case_manifest.txt"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/lib/env.sh"
 
-if [[ -f /usr/lib/openfoam/openfoam2312/etc/bashrc ]]; then
-  source /usr/lib/openfoam/openfoam2312/etc/bashrc
+MANIFEST="${MMH_REPO_ROOT}/cases/run/case_manifest.txt"
+OUT_ROOT="${MMH_REPO_ROOT}/postprocess/vtk"
+
+mmh_require_openfoam
+
+if [[ ! -f "${MANIFEST}" ]]; then
+  echo "Manifest not found. Run: python3 scripts/generate_cases.py"
+  exit 1
 fi
 
-OUT_ROOT="/workspace/postprocess/vtk"
 mkdir -p "${OUT_ROOT}"
 
 while IFS= read -r CASE; do
-  CASE_DIR="/workspace/cases/run/${CASE}"
+  CASE_DIR="${MMH_REPO_ROOT}/cases/run/${CASE}"
   [[ -d "${CASE_DIR}" ]] || continue
 
   echo "Exporting VTK: ${CASE}"
   cd "${CASE_DIR}"
 
-  # 最新タイムステップを VTK 出力
   LATEST=$(foamListTimes -latestTime 2>/dev/null | tail -1 || echo "2000")
   foamToVTK -time "${LATEST}" -fields '(p U)' | tee log.foamToVTK
 
