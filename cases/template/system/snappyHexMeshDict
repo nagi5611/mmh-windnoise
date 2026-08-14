@@ -21,8 +21,8 @@ geometry
 
 castellatedMeshControls
 {
-    maxLocalCells 500000;
-    maxGlobalCells 4000000;
+    maxLocalCells 300000;
+    maxGlobalCells 2500000;
     minRefinementCells 10;
     maxLoadUnbalance 0.10;
     nCellsBetweenLevels 2;
@@ -31,7 +31,7 @@ castellatedMeshControls
     (
         {
             file    "head.eMesh";
-            level   5;
+            level   4;
         }
     );
 
@@ -39,8 +39,8 @@ castellatedMeshControls
     {
         head
         {
-            // 背景 25 mm → level 4 ≈ 1.6 mm, level 5 ≈ 0.78 mm（顔の凹凸用）
-            level (4 5);
+            // 背景 20 mm → level 3 ≈ 2.5 mm, level 4 ≈ 1.25 mm（目標 ~2 mm、凹凸は曲率で level 4）
+            level (3 4);
         }
     }
 
