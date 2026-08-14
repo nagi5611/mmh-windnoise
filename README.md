@@ -16,33 +16,47 @@
 
 ## 前提環境
 
-- Docker Desktop（Windows + WSL2 でも可）
-- ローカル PC: Ryzen 9 8940HX / 32 GB RAM
-- GPU（RTX 5070）は **OpenFOAM では未使用**
-
-## クイックスタート
+### 推奨: Ubuntu Server 24.04 ネイティブ（Docker 不要）
 
 ```bash
 git clone https://github.com/nagi5611/mmh-windnoise.git
 cd mmh-windnoise
+./scripts/setup-native.sh    # これでセットアップ完了
+```
 
-# 1. ケース生成（44 通り）
-python3 scripts/generate_cases.py
+詳細: [docs/setup-ubuntu-native.md](docs/setup-ubuntu-native.md)
 
-# 2. OpenFOAM コンテナに入る
-make shell
-# または: docker compose run --rm openfoam bash
+| 項目 | 要件 |
+|------|------|
+| OS | Ubuntu Server 24.04 LTS |
+| RAM | 32 GB 推奨 |
+| GPU | 不要（OpenFOAM は CPU 計算） |
 
-# 3. 1 ケースでメッシュ確認
+### 任意: Docker
+
+- Docker Desktop（Windows + WSL2 でも可）
+- `docker compose` + `make docker-shell`
+
+## クイックスタート（ネイティブ Linux）
+
+```bash
+# 初回のみ
+./scripts/setup-native.sh
+
+# 計算
+source ~/.bashrc
 make mesh CASE=psi000_U010
-
-# 4-A. 定常で全ケース（高速スクリーニング、推奨まずここ）
 make run-steady
+make post
+```
 
-# 4-B. 非定常 10 s で全ケース（時間かかる）
-make run-transient
+## クイックスタート（Docker）
 
-# 5. VTK 出力 → ParaView で開く
+```bash
+docker compose pull
+make docker-shell
+make mesh CASE=psi000_U010
+make run-steady
 make post
 ```
 
