@@ -13,7 +13,8 @@ help:
 	@echo "  make restore-ic CASE=...  初期条件 0/ を復元"
 	@echo "  make run-steady     全ケース simpleFoam（定常・高速）"
 	@echo "  make run-transient  全ケース pimpleFoam（10s 非定常）"
-	@echo "  make run-parallel CASE=... [NP=8]  1ケース MPI 並列"
+	@echo "  make run-parallel CASE=... [NP=8]  1ケース MPI 並列（非定常）"
+	@echo "  make run-steady-case CASE=... NP=8  1ケース定常 simpleFoam MPI"
 	@echo "  make post           ParaView 用 VTK 出力"
 	@echo ""
 	@echo "例: make mesh CASE=psi000_U010"
@@ -52,6 +53,11 @@ run-both:
 	@test -n "$(CASE)" || (echo "Usage: make run-both CASE=psi000_U010 NP=8" && exit 1)
 	@test -n "$(NP)" || (echo "Usage: NP=8 が必要です（並列2以上）" && exit 1)
 	bash scripts/run_case_both.sh $(CASE) $(NP)
+
+run-steady-case:
+	@test -n "$(CASE)" || (echo "Usage: make run-steady-case CASE=psi000_U050 NP=8" && exit 1)
+	@test -n "$(NP)" || (echo "Usage: NP=8 が必要です（並列2以上）" && exit 1)
+	bash scripts/run_steady_parallel.sh $(CASE) $(NP)
 
 post:
 	bash scripts/export_vtk.sh

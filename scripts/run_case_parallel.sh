@@ -28,12 +28,7 @@ mmh_decompose_case "${CASE_DIR}" "${NP}" "decomposePar"
 cd "${CASE_DIR}"
 
 echo "=== ${SOLVER} -parallel (np=${NP}) ==="
-MPIRUN_EXTRA=()
-if [[ "${NP}" -gt "$(nproc)" ]]; then
-  echo "WARNING: NP=${NP} > $(nproc) コア。mpirun --oversubscribe を使用します。"
-  MPIRUN_EXTRA+=(--oversubscribe)
-fi
-mpirun "${MPIRUN_EXTRA[@]}" -np "${NP}" "${SOLVER}" -parallel | tee "log.${SOLVER}.parallel"
+mmh_mpi_run "${NP}" "${SOLVER}" -parallel | tee "log.${SOLVER}.parallel"
 
 echo "=== reconstructPar ==="
 reconstructPar | tee log.reconstructPar

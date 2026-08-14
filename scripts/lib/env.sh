@@ -166,3 +166,60 @@ mmh_decompose_case() {
     done
   )
 }
+
+# 同一ヨー角の別風速ケースからメッシュを流用（幾何は同じ）
+mmh_ensure_case_mesh() {
+  local case_dir="${1:?case_dir required}"
+  local case_name run_dir yaw donor_mesh donor_case
+
+  if [[ -f "${case_dir}/constant/polyMesh/points" ]]; then
+    return 0
+  fi
+
+  case_name="$(basename "${case_dir}")"
+  run_dir="$(dirname "${case_dir}")"
+  yaw="${case_name%%_*}"
+
+  shopt -s nullglob
+  for donor_mesh in "${run_dir}/${yaw}"_U*/constant/polyMesh/points; do
+    [[ -f "${donor_mesh}" ]] || continue
+    donor_case="$(basename "$(dirname "$(dirname "$(dirname "${donor_mesh}")")")")"
+    [[ "${donor_case}" == "${case_name}" ]] && continue
+    echo "INFO: メッシュを流用: ${donor_case} -> ${case_name}"
+    rm -rf "${case_dir}/constant/polyMesh"
+    mkdir -p "${case_dir}/constant"
+    cp -a "$(dirname "${donor_mesh}")" "${case_dir}/constant/"
+    return 0
+  done
+
+  return 1
+}
+
+mmh_configure_steady_control() {
+  local case_dir="${1:?case_dir required}"
+  local ctrl="${case_dir}/system/controlDict"
+
+  if [[ ! -f "${ctrl}.transient.bak" ]]; then
+    cp "${ctrl}" "${ctrl}.transient.bak"
+  fi
+
+  foamDictionary "${ctrl}" -entry application -set simpleFoam
+  foamDictionary "${ctrl}" -entry endTime -set 2000
+  foamDictionary "${ctrl}" -entry deltaT -set 1
+  foamDictionary "${ctrl}" -entry writeInterval -set 2000
+  foamDictionary "${ctrl}" -entry writeControl -set timeStep
+  foamDictionary "${ctrl}" -entry adjustTimeStep -set false
+}
+
+mmh_mpi_run() {
+  local np="${1:?np required}"
+  shift
+  local extra=()
+
+  if [[ "${np}" -gt "$(nproc)" ]]; then
+    echo "WARNING: NP=${np} > $(nproc) コア。mpirun --oversubscribe を使用します。" >&2
+    extra+=(--oversubscribe)
+  fi
+
+  mpirun "${extra[@]}" -np "${np}" "$@"
+}
