@@ -14,6 +14,13 @@ mmh_require_openfoam
 if [[ ! -d "${CASE_DIR}" ]]; then
   echo "Case not found: ${CASE_DIR}"
   echo "Run: python3 scripts/generate_cases.py"
+  if [[ "${CASE}" == ps*_U* ]]; then
+    local fixed="psi${CASE#ps}"
+    if [[ -d "${MMH_REPO_ROOT}/cases/run/${fixed}" ]]; then
+      echo "Did you mean: ${fixed} ?"
+      echo "  make mesh CASE=${fixed}"
+    fi
+  fi
   exit 1
 fi
 
