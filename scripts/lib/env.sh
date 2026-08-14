@@ -88,3 +88,40 @@ mmh_require_openfoam() {
     exit 1
   }
 }
+
+# 並列再実行用: processor* と結果時刻を削除（初期条件 0/ は残す）
+mmh_clean_case_solver_state() {
+  local case_dir="${1:?case_dir required}"
+  (
+    cd "${case_dir}"
+    rm -rf processor* postProcessing 2>/dev/null || true
+    shopt -s nullglob
+    for d in [1-9]* [0-9][0-9]* 0.[0-9]*; do
+      [[ -d "${d}" ]] && rm -rf "${d}"
+    done
+  )
+}
+
+# 0/ が欠けていたらテンプレートから復元（ケース名の U### から風速を設定）
+mmh_ensure_case_initial_fields() {
+  local case_dir="${1:?case_dir required}"
+  local case_name
+  case_name="$(basename "${case_dir}")"
+
+  if [[ -f "${case_dir}/0/p" ]]; then
+    return 0
+  fi
+
+  echo "WARNING: ${case_dir}/0/ が無いためテンプレートから復元します" >&2
+  cp -r "${MMH_REPO_ROOT}/cases/template/0" "${case_dir}/0"
+
+  if [[ "${case_name}" =~ _U([0-9]+)$ ]]; then
+    local u_tag="${BASH_REMATCH[1]}"
+    local u_val
+    u_val="$(awk "BEGIN {printf \"%.6f\", ${u_tag}/10}")"
+    sed -i "s/__U_INF__/${u_val}/g" "${case_dir}/0/U"
+  else
+    echo "ERROR: ケース名から風速を読めません: ${case_name}" >&2
+    return 1
+  fi
+}

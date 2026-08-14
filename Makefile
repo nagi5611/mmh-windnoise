@@ -40,17 +40,21 @@ run-transient:
 
 run-parallel:
 	@test -n "$(CASE)" || (echo "Usage: make run-parallel CASE=psi000_U010 NP=8" && exit 1)
+	@test -n "$(NP)" || (echo "Usage: NP=8 が必要です（並列2以上）" && exit 1)
 	bash scripts/run_case_parallel.sh $(CASE) pimpleFoam $(NP)
 
 run-both:
 	@test -n "$(CASE)" || (echo "Usage: make run-both CASE=psi000_U010 NP=8" && exit 1)
+	@test -n "$(NP)" || (echo "Usage: NP=8 が必要です（並列2以上）" && exit 1)
 	bash scripts/run_case_both.sh $(CASE) $(NP)
 
 post:
 	bash scripts/export_vtk.sh
 
 clean:
-	rm -rf cases/run/*/processor* cases/run/*/[0-9]* cases/run/*/postProcessing
+	rm -rf cases/run/*/processor* cases/run/*/postProcessing
+	find cases/run -mindepth 2 -maxdepth 2 -type d -regex '.*/cases/run/[^/]+/[1-9][0-9]*' -exec rm -rf {} + 2>/dev/null || true
+	find cases/run -mindepth 2 -maxdepth 2 -type d -regex '.*/cases/run/[^/]+/0\.[0-9]+' -exec rm -rf {} + 2>/dev/null || true
 	find cases/run -name "log.*" -delete 2>/dev/null || true
 
 # --- Docker（任意） ---

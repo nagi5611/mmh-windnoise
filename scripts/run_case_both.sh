@@ -13,10 +13,17 @@ CASE_DIR="${MMH_REPO_ROOT}/cases/run/${CASE}"
 TEMPLATE_CTRL="${MMH_REPO_ROOT}/cases/template/system/controlDict"
 mmh_require_openfoam
 
+if [[ ! "${NP}" =~ ^[0-9]+$ ]] || [[ "${NP}" -lt 2 ]]; then
+  echo "ERROR: 並列実行には NP>=2 が必要です。例: make run-both CASE=${CASE} NP=8" >&2
+  exit 1
+fi
+
 if [[ ! -d "${CASE_DIR}/constant/polyMesh" ]]; then
   echo "Mesh not found. Run: make mesh CASE=${CASE}"
   exit 1
 fi
+
+mmh_ensure_case_initial_fields "${CASE_DIR}"
 
 run_parallel() {
   local solver="$1"
@@ -29,12 +36,18 @@ run_parallel() {
   echo " ${label} (${solver}, np=${NP})"
   echo "========================================"
 
-  rm -rf processor* postProcessing/[0-9]* [0-9]* [0-9][0-9]* 2>/dev/null || true
+  mmh_clean_case_solver_state "${CASE_DIR}"
 
   foamDictionary system/decomposeParDict -entry numberOfSubdomains -set "${NP}"
   decomposePar -force | tee "log.decomposePar.${solver}"
 
-  mpirun -np "${NP}" ${solver} -parallel | tee "log.${solver}.parallel"
+  if [[ ! -f "processor0/0/p" ]]; then
+    echo "ERROR: decomposePar 後に processor0/0/p がありません。" >&2
+    echo "  0/p の有無: $(test -f 0/p && echo OK || echo MISSING)" >&2
+    exit 1
+  fi
+
+  mpirun -np "${NP}" "${solver}" -parallel | tee "log.${solver}.parallel"
   reconstructPar | tee "log.reconstructPar.${solver}"
 }
 

@@ -13,6 +13,11 @@ NP="${3:-${MMH_NPROCS:-8}}"
 CASE_DIR="${MMH_REPO_ROOT}/cases/run/${CASE}"
 mmh_require_openfoam
 
+if [[ ! "${NP}" =~ ^[0-9]+$ ]] || [[ "${NP}" -lt 2 ]]; then
+  echo "ERROR: 並列実行には NP>=2 が必要です。例: make run-parallel CASE=${CASE} NP=8" >&2
+  exit 1
+fi
+
 if [[ ! -d "${CASE_DIR}/constant/polyMesh" ]]; then
   echo "Mesh not found. Run: make mesh CASE=${CASE}"
   exit 1
@@ -22,8 +27,14 @@ cd "${CASE_DIR}"
 
 if [[ ! -d processor0 ]]; then
   echo "=== decomposePar (${NP} cores) ==="
+  mmh_ensure_case_initial_fields "${CASE_DIR}"
   foamDictionary system/decomposeParDict -entry numberOfSubdomains -set "${NP}"
   decomposePar -force | tee log.decomposePar
+fi
+
+if [[ ! -f "processor0/0/p" ]]; then
+  echo "ERROR: processor0/0/p がありません。decomposePar を再実行してください。" >&2
+  exit 1
 fi
 
 echo "=== ${SOLVER} -parallel (np=${NP}) ==="
