@@ -39,13 +39,12 @@ run_parallel() {
 }
 
 # --- 定常 ---
-cp "${TEMPLATE_CTRL}" "${CASE_DIR}/system/controlDict.transient.bak"
+cp "${CASE_DIR}/system/controlDict" "${CASE_DIR}/system/controlDict.transient.bak"
 foamDictionary "${CASE_DIR}/system/controlDict" -entry application -set simpleFoam
 foamDictionary "${CASE_DIR}/system/controlDict" -entry endTime -set 2000
 foamDictionary "${CASE_DIR}/system/controlDict" -entry deltaT -set 1
 foamDictionary "${CASE_DIR}/system/controlDict" -entry writeInterval -set 2000
 foamDictionary "${CASE_DIR}/system/controlDict" -entry writeControl -set timeStep
-foamDictionary "${CASE_DIR}/system/controlDict" -entry adjustTimeStep -set false
 
 run_parallel simpleFoam "定常 simpleFoam"
 
