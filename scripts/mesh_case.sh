@@ -26,11 +26,29 @@ fi
 
 cd "${CASE_DIR}"
 
+TEMPLATE="${MMH_REPO_ROOT}/cases/template"
+SFE_DICT="${CASE_DIR}/system/surfaceFeatureExtractDict"
+if [[ ! -f "${SFE_DICT}" && -f "${TEMPLATE}/system/surfaceFeatureExtractDict" ]]; then
+  echo "=== copy surfaceFeatureExtractDict (missing in case) ==="
+  cp "${TEMPLATE}/system/surfaceFeatureExtractDict" "${SFE_DICT}"
+fi
+
 echo "=== blockMesh ==="
 blockMesh | tee log.blockMesh
 
 echo "=== surfaceFeatureExtract ==="
-surfaceFeatureExtract | tee log.surfaceFeatureExtract
+if ! surfaceFeatureExtract | tee log.surfaceFeatureExtract; then
+  echo "ERROR: surfaceFeatureExtract が失敗しました。" >&2
+  exit 1
+fi
+
+EMESH="${CASE_DIR}/constant/triSurface/head.eMesh"
+if [[ ! -f "${EMESH}" ]]; then
+  echo "ERROR: head.eMesh が生成されていません: ${EMESH}" >&2
+  echo "  snappyHexMesh の features がこのファイルを要求しています。" >&2
+  echo "  対処: git pull 後に make sync-templates && make mesh CASE=${CASE} を再実行" >&2
+  exit 1
+fi
 
 echo "=== snappyHexMesh ==="
 snappyHexMesh -overwrite | tee log.snappyHexMesh
