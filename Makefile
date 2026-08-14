@@ -42,6 +42,10 @@ run-parallel:
 	@test -n "$(CASE)" || (echo "Usage: make run-parallel CASE=psi000_U010 NP=8" && exit 1)
 	bash scripts/run_case_parallel.sh $(CASE) pimpleFoam $(NP)
 
+run-both:
+	@test -n "$(CASE)" || (echo "Usage: make run-both CASE=psi000_U010 NP=8" && exit 1)
+	bash scripts/run_case_both.sh $(CASE) $(NP)
+
 post:
 	bash scripts/export_vtk.sh
 
