@@ -143,22 +143,42 @@ fi
 OPENFOAM_BASHRC="/opt/openfoam13/etc/bashrc"
 [[ -f "${OPENFOAM_BASHRC}" ]] || die "OpenFOAM の bashrc が見つかりません: ${OPENFOAM_BASHRC}"
 
-MARKER="# mmh-windnoise OpenFOAM"
-PROFILE_FILE="${HOME}/.bashrc"
-if ! grep -qF "${MARKER}" "${PROFILE_FILE}" 2>/dev/null; then
-  log "シェル設定に OpenFOAM 環境を追加 (~/.bashrc)"
-  cat >>"${PROFILE_FILE}" <<EOF
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/lib/env.sh"
+
+append_openfoam_profile() {
+  local profile_file="$1"
+  [[ -f "${profile_file}" ]] || touch "${profile_file}"
+  if grep -qF "${MARKER}" "${profile_file}" 2>/dev/null; then
+    return 0
+  fi
+  log "シェル設定に OpenFOAM 環境を追加 (${profile_file})"
+  cat >>"${profile_file}" <<EOF
 
 ${MARKER}
 export OPENFOAM_BASHRC="${OPENFOAM_BASHRC}"
-source "\${OPENFOAM_BASHRC}"
+# OpenFOAM bashrc は set -u と相性が悪いため nounset を一時解除
+if [[ -n "\${BASH_VERSION:-}" ]]; then
+  case "\$-" in *u*) _mmh_nu=1 ;; *) _mmh_nu=0 ;; esac
+  set +u
+fi
+. "\${OPENFOAM_BASHRC}"
+if [[ -n "\${BASH_VERSION:-}" && "\${_mmh_nu:-0}" -eq 1 ]]; then
+  set -u
+fi
+unset _mmh_nu
 export MMH_REPO_ROOT="${REPO_ROOT}"
 EOF
+}
+
+MARKER="# mmh-windnoise OpenFOAM"
+append_openfoam_profile "${HOME}/.bashrc"
+if [[ -f "${HOME}/.zshrc" ]] || [[ -n "${ZSH_VERSION:-}" ]]; then
+  append_openfoam_profile "${HOME}/.zshrc"
 fi
 
 # 現在のシェルでも使えるようにする
-# shellcheck disable=SC1090
-source "${OPENFOAM_BASHRC}"
+mmh_source_openfoam_file "${OPENFOAM_BASHRC}"
 export MMH_OPENFOAM_LOADED=1
 
 log "OpenFOAM 動作確認"

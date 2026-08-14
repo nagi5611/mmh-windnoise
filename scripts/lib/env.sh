@@ -3,6 +3,23 @@
 # shellcheck disable=SC2034
 MMH_REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
+# OpenFOAM の bashrc は ZSH_NAME 等の未定義変数を参照するため、
+# set -u 有効時は一時的に無効化してから source する
+mmh_source_openfoam_file() {
+  local rc="$1"
+  local nounset=0
+  case "$-" in
+    *u*) nounset=1 ;;
+  esac
+
+  set +u
+  # shellcheck disable=SC1090
+  source "${rc}"
+  if [[ "${nounset}" -eq 1 ]]; then
+    set -u
+  fi
+}
+
 mmh_source_openfoam() {
   if [[ -n "${MMH_OPENFOAM_LOADED:-}" ]]; then
     return 0
@@ -19,8 +36,7 @@ mmh_source_openfoam() {
   local rc
   for rc in "${candidates[@]}"; do
     [[ -n "${rc}" && -f "${rc}" ]] || continue
-    # shellcheck disable=SC1090
-    source "${rc}"
+    mmh_source_openfoam_file "${rc}"
     export OPENFOAM_BASHRC="${rc}"
     export MMH_OPENFOAM_LOADED=1
     return 0

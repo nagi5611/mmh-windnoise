@@ -129,6 +129,26 @@ sudo add-apt-repository "http://dl.openfoam.org/ubuntu main dev"
 sudo apt update
 ```
 
+### `/opt/openfoam13/etc/bashrc: ZSH_NAME: unbound variable`
+
+`setup-native.sh` が `set -u` で動作中に OpenFOAM の bashrc を読み込むと発生します。最新版で修正済みです。
+
+手元ですぐ直す場合:
+
+```bash
+set +u
+. /opt/openfoam13/etc/bashrc
+set -u
+simpleFoam -help
+```
+
+または setup を再実行:
+
+```bash
+git pull
+./scripts/setup-native.sh --skip-cases
+```
+
 ### snappyHexMesh が失敗
 
 ```bash
